@@ -4,39 +4,65 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import "./databaseConnect.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import Dropdown from "react-bootstrap/Dropdown";
+import Avatar, { genConfig } from 'react-nice-avatar'
+import ShowInfo from "../ShowInfo/showInfo";
 
 class DatabaseConnect extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showConnectionPage: true,
-      inputDatasetNameValue: "",
-      inputPassword: "",
-      logedUsertoken: "",
-      logedUserId: "",
-      logedUserFirstName: "",
-      logedUserLastName: "",
-      logedUserEmail: "",
-      logedUserUsername: "",
-      logedUserpassword: "",
-      logeduserRole: "",
+      showTableComponent: false,
+      inputDatabaseUsernameValue: "", 
+      inputDatabasePasswordValue: "", 
+      inputDatabaseHostValue: "", 
+      inputDatabasePortValue: "",
+      inputDatabaseNameValue: "",
+      inputDatabaseQueryValue: "",
+      selectedProyect: "-",
+      avaliableProyects: [],
+      datasetValues: []
     };
   }
   toggleRender = (RTA) => {
     this.setState({ showConnectionPage: RTA });
   };
 
-  updateDatasetNameValue = (value) => {
-    this.setState({ inputDatasetNameValue: value });
+  updateDatabaseUsernameValue = (value) => {
+    this.setState({ inputDatabaseUsernameValue: value });
   };
 
-  updatePasswordInputValue = (value) => {
-    this.setState({ inputPassword: value });
+  updateDatabasePasswordValue = (value) => {
+    this.setState({ inputDatabasePasswordValue: value });
+  };
+
+  updateDatabaseHostValue = (value) => {
+    this.setState({ inputDatabaseHostValue: value });
+  };
+
+  updateDatabasePortValue = (value) => {
+    this.setState({ inputDatabasePortValue: value });
+  };
+
+  updateDatabaseNameValue = (value) => {
+    this.setState({ inputDatabaseNameValue: value });
+  };
+
+    updateDatabaseQueryValue = (value) => {
+    this.setState({ inputDatabaseQueryValue: value });
+  };
+
+  updateShowTableComponent = () => {
+    this.setState({ showTableComponent: true });
+    this.toggleRender(false);
   };
 
   loginVerification = (e) => {
-    const { inputEmail, inputPassword } = this.state;
-
+    const { inputDatabaseUsernameValue, inputDatabasePasswordValue,
+       inputDatabaseHostValue, inputDatabasePortValue,
+        inputDatabaseNameValue, inputDatabaseQueryValue } = this.state;
     const options = {
       method: "post",
       headers: {
@@ -44,70 +70,29 @@ class DatabaseConnect extends React.Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: inputEmail,
-        password: inputPassword,
+        username: inputDatabaseUsernameValue,
+        password: inputDatabasePasswordValue,
+        host: inputDatabaseHostValue, 
+        port: inputDatabasePortValue, 
+        databaseName: inputDatabaseNameValue, 
+        query: inputDatabaseQueryValue
       }),
     };
-    fetch("http://localhost:3001/users/login/", options)
+    fetch("http://localhost:3001/getdata/obtaininfo/", options)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.message && data.message.includes("succesfully")) {
-          this.setState(
-            {
-              logedUsertoken: data.token ? data.token : "",
-              logedUserId: data.user
-                ? data.user._id
-                  ? data.user._id
-                  : ""
-                : "",
-              logedUserFirstName: data.user
-                ? data.user.first_name
-                  ? data.user.first_name
-                  : ""
-                : "",
-              logedUserLastName: data.user
-                ? data.user.last_name
-                  ? data.user.last_name
-                  : ""
-                : "",
-              logedUserEmail: data.user
-                ? data.user.email
-                  ? data.user.email
-                  : ""
-                : "",
-              logedUserUsername: data.user
-                ? data.user.username
-                  ? data.user.username
-                  : ""
-                : "",
-              logedUserpassword: data.user
-                ? data.user.password
-                  ? data.user.password
-                  : ""
-                : "",
-                logedUserRole: data.user
-                ? data.user.role
-                  ? data.user.role
-                  : ""
-                : "",
-            },
+        if (data && data.length>0) {
+          this.setState({datasetValues: data},
             () => {
-              this.updateEmailInputValue("");
-              this.updatePasswordInputValue("");
+              this.updateDatabaseUsernameValue("");
+              this.updateDatabasePasswordValue("");
+              this.updateDatabaseHostValue("");
+              this.updateDatabasePortValue("");
+              this.updateDatabaseNameValue("");
+              this.updateDatabaseQueryValue("");
+              this.updateShowTableComponent();
             }
           );
-        } else if (
-          data &&
-          data.message &&
-          data.message === "The password is incorrect"
-        ) {
-          //show alert saying incorrect password
-        } else if (
-          data &&
-          data.message &&
-          data.message === "The user with the given email was not found."
-        ) {
-          //show alert saying email not registered
         } else {
           //Show general error message
         }
@@ -115,26 +100,66 @@ class DatabaseConnect extends React.Component {
   };
 
   render() {
-    const { showConnectionPage } = this.state;
+    const { showConnectionPage, showTableComponent, avaliableProyects } = this.state;
+    const {data} = this.props;
+    const config = genConfig();
+    let Proyects;
+    console.log(showTableComponent);
+    if (avaliableProyects.length > 0) {
+      Proyects = avaliableProyects.map((item, i) => (
+        <Dropdown.Item eventKey={item.subject+"_"+i}>{item.subject}</Dropdown.Item>
+      ));
+    }
     if (showConnectionPage) {
       return (
         <div>
           <Container>
             <Row>
-              <Col xs={{ order: "first" }}></Col>
-              <Col xs>
+              <Col xs={{ order: "first" }} className="user-info" lg="3">
+                <Container>
+                  <Row xs="auto">
+                    <Col>
+                      <Avatar  className="user-image" style={{ width: '13rem', height: '13rem' }}  {...config}/>
+                    </Col>
+                  </Row>
+                  <Row xs="auto" className="user_info">
+                    <Col>
+                      <h4 className="bienvenido_usuario">¡Bienvenido {data.logedUserFirstName}!</h4>
+                    </Col>
+                  </Row>
+                  <Row xs="auto" className="user_info">
+                    <Col>
+                      <h5 className="bienvenido_usuario">tus proyectos</h5>
+                    </Col>
+                  </Row>
+                  <Row xs="auto" className="user_info">
+                    <Col>
+                    <DropdownButton
+                      variant="danger"
+                      title="Escoge un proyecto"
+                      id="dropdown-menu-align-right"
+                      className="drop_proyectos"
+                      onSelect={this.updateProyectPickerValue}
+                    >
+                      {Proyects}
+                    </DropdownButton>
+                    </Col>
+                  </Row>
+                </Container>
+              </Col>
+              <Col xs lg="9" className="database_login">
                 <form>
                   <h3 id="welome">Conectate a tu base de datos!</h3>
                   <div className="form-group">
-                    <label>Nombre del dataset</label>
+                    <label>Nombre de usuario</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={this.state.inputDatasetNameValue}
+                      value={this.state.inputDatabaseUsernameValue}
                       onInput={(e) =>
-                        this.updateDatasetNameValue(e.target.value)
+                        this.updateDatabaseUsernameValue(e.target.value)
                       }
-                      placeholder="Ingresa el nombre del dataset"
+                      placeholder="Ingresa el nombre de usuario"
                     />
                   </div>
                   <div className="form-group">
@@ -142,32 +167,86 @@ class DatabaseConnect extends React.Component {
                     <input
                       type="password"
                       className="form-control"
-                      placeholder="Ingresa una contraseña"
-                      value={this.state.inputPassword}
+                      placeholder="Ingresa la contraseña"
+                      value={this.state.inputDatabasePasswordValue}
                       onInput={(e) =>
-                        this.updatePasswordInputValue(e.target.value)
+                        this.updateDatabasePasswordValue(e.target.value)
                       }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Host</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.inputDatabaseHostValue}
+                      onInput={(e) =>
+                        this.updateDatabaseHostValue(e.target.value)
+                      }
+                      placeholder="Ingresa el host"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Puerto</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.inputDatabasePortValue}
+                      onInput={(e) =>
+                        this.updateDatabasePortValue(e.target.value)
+                      }
+                      placeholder="Ingresa el puerto"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nombre de base de datos</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.inputDatabaseNameValue}
+                      onInput={(e) =>
+                        this.updateDatabaseNameValue(e.target.value)
+                      }
+                      placeholder="Ingresa el nombre de la base de datos"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Query que deseas ejecutar</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.inputDatabaseQueryValue}
+                      onInput={(e) =>
+                        this.updateDatabaseQueryValue(e.target.value)
+                      }
+                      placeholder="Ingresa el query SQL"
                     />
                   </div>
                   <button
                     type="button"
                     style={{
-                      width: "370px",
+                      width: "350px",
                       marginTop: "30px",
                       marginBottom: "10px",
                     }}
                     className="btn btn-primary btn-block"
                     onClick={this.loginVerification}
                   >
-                    Ingresar
+                    Conectar
                   </button>
-                  <p className="forgot-password text-right">
-                    ¿No tienes una cuenta?<a href="/register"> Registrate</a>
-                  </p>
                 </form>
               </Col>
             </Row>
           </Container>
+        </div>
+      );
+    }
+    console.log("si llega");
+    console.log(showTableComponent);
+    if(showTableComponent){
+      return (
+        <div>
+          <ShowInfo showLastPage={this.toggleRender} data={this.state} />
         </div>
       );
     }
