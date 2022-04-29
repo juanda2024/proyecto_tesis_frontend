@@ -2,17 +2,15 @@ import React from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import "./login.css";
-import DatabaseConnect from "../DatabaseConnect/databaseConnect";
+import "./databaseConnect.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-class Login extends React.Component {
+class DatabaseConnect extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showLoginPage: true,
-      showDatabaseConnect: false,
-      inputEmail: "",
+      showConnectionPage: true,
+      inputDatasetNameValue: "",
       inputPassword: "",
       logedUsertoken: "",
       logedUserId: "",
@@ -25,16 +23,11 @@ class Login extends React.Component {
     };
   }
   toggleRender = (RTA) => {
-    this.setState({ showLoginPage: RTA });
+    this.setState({ showConnectionPage: RTA });
   };
 
-  showDatabaseConnect = () => {
-    this.setState({ showDatabaseConnect: true });
-    this.toggleRender(false);
-  };
-
-  updateEmailInputValue = (value) => {
-    this.setState({ inputEmail: value });
+  updateDatasetNameValue = (value) => {
+    this.setState({ inputDatasetNameValue: value });
   };
 
   updatePasswordInputValue = (value) => {
@@ -101,7 +94,6 @@ class Login extends React.Component {
             () => {
               this.updateEmailInputValue("");
               this.updatePasswordInputValue("");
-              this.showDatabaseConnect();
             }
           );
         } else if (
@@ -123,8 +115,8 @@ class Login extends React.Component {
   };
 
   render() {
-    const { showLoginPage, showDatabaseConnect } = this.state;
-    if (showLoginPage) {
+    const { showConnectionPage } = this.state;
+    if (showConnectionPage) {
       return (
         <div>
           <Container>
@@ -132,17 +124,17 @@ class Login extends React.Component {
               <Col xs={{ order: "first" }}></Col>
               <Col xs>
                 <form>
-                  <h3 id="welome">Bienvenido a Avircity</h3>
+                  <h3 id="welome">Conectate a tu base de datos!</h3>
                   <div className="form-group">
-                    <label>Correo electronico</label>
+                    <label>Nombre del dataset</label>
                     <input
-                      type="email"
+                      type="text"
                       className="form-control"
-                      value={this.state.inputEmail}
+                      value={this.state.inputDatasetNameValue}
                       onInput={(e) =>
-                        this.updateEmailInputValue(e.target.value)
+                        this.updateDatasetNameValue(e.target.value)
                       }
-                      placeholder="Ingresa un correo electronico"
+                      placeholder="Ingresa el nombre del dataset"
                     />
                   </div>
                   <div className="form-group">
@@ -174,16 +166,8 @@ class Login extends React.Component {
                   </p>
                 </form>
               </Col>
-              <Col xs={{ order: "last" }}></Col>
             </Row>
           </Container>
-        </div>
-      );
-    }
-    if (showDatabaseConnect) {
-      return (
-        <div>
-          <DatabaseConnect showLastPage={this.toggleRender} data={this.state} />
         </div>
       );
     }
@@ -192,4 +176,4 @@ class Login extends React.Component {
     }
   }
 }
-export default Login;
+export default DatabaseConnect;
