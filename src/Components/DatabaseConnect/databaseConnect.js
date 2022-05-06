@@ -84,13 +84,15 @@ class DatabaseConnect extends React.Component {
        inputDatabaseHostValue, inputDatabasePortValue,
         inputDatabaseNameValue, inputDatabaseQueryValue } = this.state;
     const {data} = this.props;
-    let options = {};
+    let options;
     if(selectedProyect === "-"){
       // intenta crear el registro del proyecto y asociarselo al usuario
       const options = {
         method: "post",
         headers: {
-          'x-access-token': data.logedUsertoken,
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "x-access-token": data.logedUsertoken,
         },
         body: JSON.stringify({
           connectionName: inputDatabaseConnectionNameValue,
@@ -102,22 +104,26 @@ class DatabaseConnect extends React.Component {
           originalQuery: inputDatabaseQueryValue
         }),
       };
-      console.log(options);
       fetch("http://localhost:3001/proyects/register/", options)
       .then((response) => response.json())
-      .then((data) => {
-        if(data && data.insertedId){
-          options = {
+      .then((data1) => {
+        if(data1 && data1.insertedId){
+          const options1 = {
             method: "put",
-            headers: new Headers({
-              'x-access-token': data.logedUsertoken
-          }),
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "x-access-token": data.logedUsertoken,
+            },
+            body: JSON.stringify({
+              id: data1.insertedId
+            }),
           };
-          fetch("http://localhost:3001/users/addProyect/"+ data.insertedId, options)
+          fetch("http://localhost:3001/users/addProyect/"+ data.logedUserId, options1)
           .then((response) => response.json())
-          .then((data) => {
-            if (data && data.message === "The user`s proyect was added succesfully!") {
-              options = {
+          .then((data2) => {
+            if (data2 && data2.message === "The user`s proyect was added succesfully!") {
+              const options2 = {
                 method: "post",
                 headers: {
                   Accept: "application/json, text/plain, */*",
@@ -133,11 +139,12 @@ class DatabaseConnect extends React.Component {
                   query: inputDatabaseQueryValue
                 }),
               };
-              fetch("http://localhost:3001/getdata/obtaininfo/", options)
+              fetch("http://localhost:3001/getdata/obtaininfo/", options2)
               .then((response) => response.json())
-              .then((data) => {
-                if (data && data.length>0) {
-                  this.setState({datasetValues: data},
+              .then((data3) => {
+                console.log(data3);
+                if (data3 && data3.length>0) {
+                  this.setState({datasetValues: data3},
                     () => {
                       this.updateDatabaseConnectionNameValue("");
                       this.updateDatabaseUsernameValue("");
