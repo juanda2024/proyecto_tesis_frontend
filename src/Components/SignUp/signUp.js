@@ -150,6 +150,8 @@ class SignUp extends React.Component {
 
   render() {
     const { showSignUpPage } = this.state;
+    console.log("hola");
+    console.log(showSignUpPage);
     if (showSignUpPage) {
       return (
         <div>

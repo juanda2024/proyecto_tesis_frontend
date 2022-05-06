@@ -21,7 +21,8 @@ class Login extends React.Component {
       logedUserEmail: "",
       logedUserUsername: "",
       logedUserpassword: "",
-      logeduserRole: "",
+      logedUserRole: "",
+      logedUserProyects: []
     };
   }
   toggleRender = (RTA) => {
@@ -95,6 +96,12 @@ class Login extends React.Component {
                 logedUserRole: data.user
                 ? data.user.role
                   ? data.user.role
+                  : ""
+                : "",
+                logedUserProyects: data.user
+                ? data.user.proyects
+                  ? data.user.proyects.length > 0
+                  ? data.user.proyects: ""
                   : ""
                 : "",
             },

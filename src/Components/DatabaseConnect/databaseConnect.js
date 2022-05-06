@@ -6,7 +6,8 @@ import "./databaseConnect.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
-import Avatar, { genConfig } from 'react-nice-avatar'
+import Avatar, { genConfig } from 'react-nice-avatar';
+import Form from "react-bootstrap/Form";
 import ShowInfo from "../ShowInfo/showInfo";
 
 class DatabaseConnect extends React.Component {
@@ -15,6 +16,8 @@ class DatabaseConnect extends React.Component {
     this.state = {
       showConnectionPage: true,
       showTableComponent: false,
+      proyectNamesListAvaliable: false,
+      inputDatabaseConnectionNameValue: "",
       inputDatabaseUsernameValue: "", 
       inputDatabasePasswordValue: "", 
       inputDatabaseHostValue: "", 
@@ -22,12 +25,21 @@ class DatabaseConnect extends React.Component {
       inputDatabaseNameValue: "",
       inputDatabaseQueryValue: "",
       selectedProyect: "-",
+      counterProyects: 0,
       avaliableProyects: [],
       datasetValues: []
     };
   }
   toggleRender = (RTA) => {
     this.setState({ showConnectionPage: RTA });
+  };
+
+  updateProyectPickerValue = (value) => {
+    this.setState({ selectedProyect: value });
+  };
+
+  updateDatabaseConnectionNameValue = (value) => {
+    this.setState({ inputDatabaseConnectionNameValue: value });
   };
 
   updateDatabaseUsernameValue = (value) => {
@@ -54,63 +66,189 @@ class DatabaseConnect extends React.Component {
     this.setState({ inputDatabaseQueryValue: value });
   };
 
+  updateCounterProyectsValue = (value) => {
+    this.setState({ counterProyects: value });
+  };
+
   updateShowTableComponent = () => {
     this.setState({ showTableComponent: true });
     this.toggleRender(false);
   };
 
+  afterSetStateFinished() {
+    this.setState({ proyectNamesListAvaliable: true });
+  }
+
   loginVerification = (e) => {
-    const { inputDatabaseUsernameValue, inputDatabasePasswordValue,
+    const {selectedProyect, inputDatabaseConnectionNameValue , inputDatabaseUsernameValue, inputDatabasePasswordValue,
        inputDatabaseHostValue, inputDatabasePortValue,
         inputDatabaseNameValue, inputDatabaseQueryValue } = this.state;
-    const options = {
-      method: "post",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: inputDatabaseUsernameValue,
-        password: inputDatabasePasswordValue,
-        host: inputDatabaseHostValue, 
-        port: inputDatabasePortValue, 
-        databaseName: inputDatabaseNameValue, 
-        query: inputDatabaseQueryValue
-      }),
-    };
-    fetch("http://localhost:3001/getdata/obtaininfo/", options)
+    const {data} = this.props;
+    let options = {};
+    if(selectedProyect === "-"){
+      // intenta crear el registro del proyecto y asociarselo al usuario
+      const options = {
+        method: "post",
+        headers: {
+          'x-access-token': data.logedUsertoken,
+        },
+        body: JSON.stringify({
+          connectionName: inputDatabaseConnectionNameValue,
+          username: inputDatabaseUsernameValue,
+          password: inputDatabasePasswordValue,
+          host: inputDatabaseHostValue, 
+          port: inputDatabasePortValue, 
+          databaseName: inputDatabaseNameValue, 
+          originalQuery: inputDatabaseQueryValue
+        }),
+      };
+      console.log(options);
+      fetch("http://localhost:3001/proyects/register/", options)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.length>0) {
-          this.setState({datasetValues: data},
-            () => {
-              this.updateDatabaseUsernameValue("");
-              this.updateDatabasePasswordValue("");
-              this.updateDatabaseHostValue("");
-              this.updateDatabasePortValue("");
-              this.updateDatabaseNameValue("");
-              this.updateDatabaseQueryValue("");
-              this.updateShowTableComponent();
+        if(data && data.insertedId){
+          options = {
+            method: "put",
+            headers: new Headers({
+              'x-access-token': data.logedUsertoken
+          }),
+          };
+          fetch("http://localhost:3001/users/addProyect/"+ data.insertedId, options)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data && data.message === "The user`s proyect was added succesfully!") {
+              options = {
+                method: "post",
+                headers: {
+                  Accept: "application/json, text/plain, */*",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  connectionName: inputDatabaseConnectionNameValue,
+                  username: inputDatabaseUsernameValue,
+                  password: inputDatabasePasswordValue,
+                  host: inputDatabaseHostValue, 
+                  port: inputDatabasePortValue, 
+                  databaseName: inputDatabaseNameValue, 
+                  query: inputDatabaseQueryValue
+                }),
+              };
+              fetch("http://localhost:3001/getdata/obtaininfo/", options)
+              .then((response) => response.json())
+              .then((data) => {
+                if (data && data.length>0) {
+                  this.setState({datasetValues: data},
+                    () => {
+                      this.updateDatabaseConnectionNameValue("");
+                      this.updateDatabaseUsernameValue("");
+                      this.updateDatabasePasswordValue("");
+                      this.updateDatabaseHostValue("");
+                      this.updateDatabasePortValue("");
+                      this.updateDatabaseNameValue("");
+                      this.updateDatabaseQueryValue("");
+                      this.updateShowTableComponent();
+                    }
+                  );
+                } else {
+                  //Show general error message consulting table info
+                }
+              });
+            } else {
+              //Show general error message at relating new connection with current user
             }
-          );
-        } else {
-          //Show general error message
+          });
+        }
+        else{
+          // Connection already exist
         }
       });
+    }
+    else{
+      fetch("http://localhost:3001/proyects/" + selectedProyect.split("_")[1], {
+        method: 'get',
+        headers: new Headers({
+          'x-access-token': data.logedUsertoken
+      }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        options = {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            connectionName: data? data[0]? data[0].connectionName? data[0].connectionName: "": "": "",
+            username: data? data[0]? data[0].username? data[0].username: "": "": "",
+            password: data? data[0]? data[0].password? data[0].password: "": "": "",
+            host: data? data[0]? data[0].host? data[0].host: "": "": "",
+            port: data? data[0]? data[0].port? data[0].port: "": "": "",
+            databaseName: data? data[0]? data[0].databaseName? data[0].databaseName: "": "": "",
+            query: data? data[0]? data[0].originalQuery? data[0].originalQuery: "": "": "",
+          }),
+        };
+        fetch("http://localhost:3001/getdata/obtaininfo/", options)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && data.length>0) {
+            this.setState({datasetValues: data},
+              () => {
+                this.updateDatabaseConnectionNameValue("");
+                this.updateDatabaseUsernameValue("");
+                this.updateDatabasePasswordValue("");
+                this.updateDatabaseHostValue("");
+                this.updateDatabasePortValue("");
+                this.updateDatabaseNameValue("");
+                this.updateDatabaseQueryValue("");
+                this.updateShowTableComponent();
+              }
+            );
+          } else {
+            //Show general error message
+          }
+        });
+      });
+    }
   };
 
+  componentDidMount() {
+    const {data} = this.props;
+    let counter = 0; 
+    if (data.logedUserProyects.length > 0) {
+      for (let index = 0; index < data.logedUserProyects.length; index++) {
+        fetch("http://localhost:3001/proyects/" + data.logedUserProyects[index], {
+          method: 'get',
+          headers: new Headers({
+            'x-access-token': data.logedUsertoken
+        }),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.setState(
+            { avaliableProyects: [...this.state.avaliableProyects, data] }
+          );
+        });
+        counter+=1;
+        if(counter === data.logedUserProyects.length){
+          this.updateCounterProyectsValue(counter);
+          this.afterSetStateFinished();
+        }   
+      }
+    }
+  }
+
   render() {
-    const { showConnectionPage, showTableComponent, avaliableProyects } = this.state;
+    const {counterProyects, selectedProyect, avaliableProyects, showConnectionPage, showTableComponent, proyectNamesListAvaliable } = this.state;
     const {data} = this.props;
     const config = genConfig();
     let Proyects;
-    console.log(showTableComponent);
-    if (avaliableProyects.length > 0) {
+    if (avaliableProyects.length === counterProyects) {
       Proyects = avaliableProyects.map((item, i) => (
-        <Dropdown.Item eventKey={item.subject+"_"+i}>{item.subject}</Dropdown.Item>
-      ));
+          <Dropdown.Item eventKey={item[0].connectionName+"_"+item[0]._id+"_"+i}>{item[0].connectionName}</Dropdown.Item>
+        ));
     }
-    if (showConnectionPage) {
+    if (showConnectionPage && proyectNamesListAvaliable) {
       return (
         <div>
           <Container>
@@ -136,20 +274,53 @@ class DatabaseConnect extends React.Component {
                     <Col>
                     <DropdownButton
                       variant="danger"
-                      title="Escoge un proyecto"
+                      title="Escoge un proyecto  "
                       id="dropdown-menu-align-right"
-                      className="drop_proyectos"
                       onSelect={this.updateProyectPickerValue}
                     >
                       {Proyects}
                     </DropdownButton>
+                    </Col>
+                    <Col>
+                    <Form.Group>
+                    <h5 className="bienvenido_usuario">Proyecto seleccionado</h5>
+                    <Form.Control
+                      placeholder={selectedProyect.split("_")[0]}
+                      value={selectedProyect.split("_")[0]}
+                      disabled
+                    />
+                  </Form.Group>
+                  <button
+                    type="button"
+                    disabled={this.state.selectedProyect === "-"?true:false} 
+                    style={{
+                      width: "200px",
+                      marginTop: "30px",
+                    }}
+                    className="btn btn-primary btn-block"
+                    onClick={this.loginVerification}
+                  >
+                    Conectarse
+                  </button>
                     </Col>
                   </Row>
                 </Container>
               </Col>
               <Col xs lg="9" className="database_login">
                 <form>
-                  <h3 id="welome">Conectate a tu base de datos!</h3>
+                  <h3 id="welome">Crea una conexión a tu base de datos!</h3>
+                  <div className="form-group">
+                    <label>Nombre de la conexión</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.inputDatabaseConnectionNameValue}
+                      onInput={(e) =>
+                        this.updateDatabaseConnectionNameValue(e.target.value)
+                      }
+                      placeholder="Ingresa el nombre con el que quieres guardar esta conexión!"
+                    />
+                  </div>
                   <div className="form-group">
                     <label>Nombre de usuario</label>
                     <input
@@ -226,7 +397,7 @@ class DatabaseConnect extends React.Component {
                     type="button"
                     style={{
                       width: "350px",
-                      marginTop: "30px",
+                      marginTop: "15px",
                       marginBottom: "10px",
                     }}
                     className="btn btn-primary btn-block"
@@ -241,8 +412,6 @@ class DatabaseConnect extends React.Component {
         </div>
       );
     }
-    console.log("si llega");
-    console.log(showTableComponent);
     if(showTableComponent){
       return (
         <div>

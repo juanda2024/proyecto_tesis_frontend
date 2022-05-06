@@ -29,13 +29,14 @@ class App extends React.Component {
             <Routes>
               <Route
                 path="/register"
-                element={<SignUp showMainPage={this.toggleRender} />}
+                element={<SignUp showMainPage={this.toggleRender} data={this.state} />}
               />
             </Routes>
           </Router>
         </div>
       );
-    } else {
+    }
+     else {
       return (
         <div>
           <Router>
@@ -43,7 +44,7 @@ class App extends React.Component {
             <Routes>
               <Route
                 path="/register"
-                element={<SignUp showMainPage={this.toggleRender} />}
+                element={<SignUp showMainPage={this.toggleRender}/>}
               />
             </Routes>
           </Router>
