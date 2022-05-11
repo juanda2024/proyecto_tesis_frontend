@@ -34,8 +34,7 @@
 
 .bienvenido_usuario_logueado{
     color: white;
-    margin-top: 30px;
-
+    margin-top: 15px;
 }
 
 
@@ -72,4 +71,17 @@ thead, tbody tr {
     display: table;
     width: 300%;
     table-layout: fixed;/* even columns width , fix width of table too*/
+}
+
+.logo1 {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 1ch;
+    background-color: white;
+}
+
+.logo2 {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: white;
 }

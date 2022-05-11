@@ -121,27 +121,30 @@ class ShowInfo extends React.Component {
                     </Col>
                   </Row>
                   <Row xs="auto" className="user_info">
-                    <Col>
+                    <Col lg={3} className="user_info logo1">
                       <img
-                        id="hp"
                         src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg"
-                        height={20}
-                        width={20}
+                        height={30}
+                        width={30}
                       ></img>
-                      <p className="bienvenido_usuario_logueado">
+                    </Col>
+                    <Col lg={9}>
+                    <p className="bienvenido_usuario_logueado">
                         Eliminar columna
                       </p>
                     </Col>
                   </Row>
                   <Row xs="auto" className="user_info">
-                    <Col>
+                    <Col lg={3} className="user_info logo2">
                       <img
                         src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png"
-                        height={20}
-                        width={20}
+                        height={30}
+                        width={30}
                       ></img>
+                    </Col>
+                    <Col lg={9}>
                       <p className="bienvenido_usuario_logueado">
-                        Aplicar privacidad diferencial sobre esta columna!
+                        Privacidad Diferencial
                       </p>
                     </Col>
                   </Row>
