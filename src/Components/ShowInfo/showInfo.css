@@ -31,3 +31,24 @@
     margin-top: 30px;
     margin-bottom: 200px;
 }
+
+.closing{
+    padding: 0px 0px 0px 10px;
+    border: none;
+    background: none;
+}
+
+.closing1{
+    padding: 0px;
+    border: none;
+    background: none;
+}
+
+.infoTable {
+    table-layout: fixed;
+    width: 6000px;
+  }
+
+.mensaje {
+    font-weight: normal;
+}

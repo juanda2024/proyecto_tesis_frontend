@@ -1,10 +1,12 @@
-import React from "react";
+import React from 'react';
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import "./showInfo.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import Avatar, { genConfig } from 'react-nice-avatar';
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -13,55 +15,28 @@ class ShowInfo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showInfoPage: true,
+      showModal: false,
+      showInfoPage: true
     };
   }
   toggleRender = (RTA) => {
     this.setState({ showInfoPage: RTA });
   };
 
-  // loginVerification = (e) => {
-  //   const { inputDatabaseUsernameValue, inputDatabasePasswordValue,
-  //      inputDatabaseHostValue, inputDatabasePortValue,
-  //       inputDatabaseNameValue, inputDatabaseQueryValue } = this.state;
-  //   const options = {
-  //     method: "post",
-  //     headers: {
-  //       Accept: "application/json, text/plain, */*",
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       username: inputDatabaseUsernameValue,
-  //       password: inputDatabasePasswordValue,
-  //       host: inputDatabaseHostValue, 
-  //       port: inputDatabasePortValue, 
-  //       databaseName: inputDatabaseNameValue, 
-  //       query: inputDatabaseQueryValue
-  //     }),
-  //   };
-  //   fetch("http://localhost:3001/getdata/obtaininfo/", options)
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       if (data && data.length>0) {
-  //         this.setState({datasetValues: data},
-  //           () => {
-  //             this.updateDatabaseUsernameValue("");
-  //             this.updateDatabasePasswordValue("");
-  //             this.updateDatabaseHostValue("");
-  //             this.updateDatabasePortValue("");
-  //             this.updateDatabaseNameValue("");
-  //             this.updateDatabaseQueryValue("");
-  //             this.updateShowTableComponent();
-  //           }
-  //         );
-  //       } else {
-  //         //Show general error message
-  //       }
-  //     });
-  // };
+  showModal = () => {
+    this.setState({ showModal: true });
+  };
 
+  hideModal = () => {
+    this.setState({ showModal: false });
+  };
+
+  deleteColumn = () => {
+    this.setState({ showModal: false });
+  };
+ 
   render() {
-    const { showInfoPage } = this.state;
+    const { showInfoPage, showModal} = this.state;
     const {data} = this.props;
     const config = genConfig();
     console.log(data.datasetValues);
@@ -70,7 +45,10 @@ class ShowInfo extends React.Component {
     let rowsToPrint = [];
     columns = Object.keys(data.datasetValues[0])
     for(let i = 0; i < columns.length; i++){
-      columnsToPrint.push(<th>{columns[i]}</th>)
+      columnsToPrint.push(<th><center>{columns[i]}
+      <button id={columns[i]} className="closing" onClick={this.showModal}><img src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button>
+      <button id="close" className="closing1" onClick={this.showModal}><img src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></center>
+      </th>)
     }
     for(let i = 0; i < data.datasetValues.length; i++){
       let value = []
@@ -81,10 +59,23 @@ class ShowInfo extends React.Component {
       }
       rowsToPrint.push(<tr>{value}</tr>);
     } 
-    console.log(rowsToPrint)
     if (showInfoPage) {
       return (
         <div>
+          <Modal show={showModal} onHide={this.hideModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Eliminar columna</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">Vas a eliminar esta columna para la vista. ¿Estas seguro?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={this.deleteColumn}>
+              Eliminar
+            </Button>
+            <Button variant="primary" onClick={this.hideModal}>
+              Cancelar
+            </Button>
+          </Modal.Footer>
+          </Modal>
           <Container>
             <Row>
               <Col xs={{ order: "first" }} className="user-info" lg="3">
@@ -109,7 +100,7 @@ class ShowInfo extends React.Component {
               <Col xs lg="9" className="database_login">
               <h2></h2>
               <h2>Tu tabla:</h2>
-              <Table striped bordered hover>
+              <Table striped bordered hover className="infoTable">
                     <thead>
                         <tr>
                         {columnsToPrint}
