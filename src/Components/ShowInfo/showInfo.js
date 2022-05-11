@@ -7,6 +7,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import FormControl from "react-bootstrap/FormControl";
 import Avatar, { genConfig } from 'react-nice-avatar';
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -14,16 +17,23 @@ import Dropdown from "react-bootstrap/Dropdown";
 class ShowInfo extends React.Component {
   constructor(props) {
     super(props);
+    this.title = React.createRef()
     this.state = {
       showModal: false,
-      showInfoPage: true
+      showInfoPage: true,
+      showDPModal: false,
+      columSelected: "",
+      columnDelete: false,
+      newData: {datasetValues: []}
     };
   }
   toggleRender = (RTA) => {
     this.setState({ showInfoPage: RTA });
   };
 
-  showModal = () => {
+  showModal = (e) => {
+    const id = e.target.id;
+    this.setState({ columSelected: id });
     this.setState({ showModal: true });
   };
 
@@ -31,19 +41,106 @@ class ShowInfo extends React.Component {
     this.setState({ showModal: false });
   };
 
-  deleteColumn = () => {
-    this.setState({ showModal: false });
+  showDPModal = (e) => {
+    const id = e.target.id;
+    this.setState({ columSelected: id });
+    this.setState({ showDPModal: true });
+  };
+
+  hideDPModal = () => {
+    this.setState({ showDPModal: false });
+  };
+  
+  applyDP = (e) => {
+    console.log(e.target.parentNode.parentNode.children[1].children[1].value);
+  
+  };
+
+  applyOnChange = (e) => {
+    let valor = e.target.value;
+    let elementoValue = document.getElementById('countValue')
+    if(valor==="Contar"){
+      elementoValue.hidden = false;
+    }
+    else{
+      elementoValue.hidden = true;
+    }
+  };
+
+  deleteColumn = (e) => {
+    let proyects = this.props.data.avaliableProyects;
+    let proyectSelected = this.props.data.selectedProyect.split('_')[1];
+    var dbname, dbhost, dbpassword, dbport, dbusername, dbtable, querySplit;
+    for(let i = 0; i < proyects.length; i++){
+      if(proyects[i][0]["_id"] === proyectSelected){
+        dbname = proyects[i][0]["databaseName"]
+        dbhost = proyects[i][0]["host"]
+        dbpassword = proyects[i][0]["password"]
+        dbport = proyects[i][0]["port"]
+        dbusername = proyects[i][0]["username"]
+        querySplit = proyects[i][0]["originalQuery"].split(" ")
+        dbtable = querySplit[querySplit.length-1]
+        const options = {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: dbusername,
+            password: dbpassword,
+            host: dbhost,
+            port: dbport,
+            databaseName: dbname
+          })
+        };
+        let url = "http://127.0.0.1:3002/deleteColumn/" + dbtable + "/" + this.state.columSelected;
+        fetch(url, options)
+        .then(() => {
+          const options2 = {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: dbusername,
+              password: dbpassword,
+              host: dbhost, 
+              port: dbport, 
+              databaseName: dbname, 
+              query: querySplit.join(" ")
+            }),
+          };
+          fetch("http://localhost:3001/getdata/obtaininfo/", options2)
+          .then((response) => response.json())
+          .then((data3) => {
+            this.setState({ newData: {datasetValues: data3} });
+            this.setState({ columnDelete: true });
+            this.setState({ showModal: false });
+          });
+        });
+      } 
+    }
   };
 
   render() {
-    const { showInfoPage, showModal} = this.state;
+    console.log(this.title)
+    const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData} = this.state;
+    var dataToUse;
     const {data, lastData} = this.props;
+    if(columnDelete){
+      dataToUse = newData;
+    }
+    else{
+      dataToUse = data;
+    }
+    
     const config = genConfig();
-    //console.log(data.datasetValues);
     let columns;
     let columnsToPrint = [];
     let rowsToPrint = [];
-    columns = Object.keys(data.datasetValues[0]);
+    columns = Object.keys(dataToUse.datasetValues[0]);
     for(let i = 0; i < columns.length; i++){
       columnsToPrint.push(
   <th>
@@ -52,39 +149,84 @@ class ShowInfo extends React.Component {
         <center>{columns[i]}</center>
       </div>
       <div class='row' xs="auto" className="user_info">   
-          <div class="col" className="user_info"><button id={columns[i]} className="closing" onClick={this.showModal}><img src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
-          <div class="col" className="user_info"><button id="close" className="closing1" onClick={this.showModal}><img src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+          <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
+          <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
       </div>
     </div>
 </th>)
     }
-    for (let i = 0; i < data.datasetValues.length; i++) {
+    for (let i = 0; i < dataToUse.datasetValues.length; i++) {
       let value = [];
       for (let j = 0; j < columns.length; j++) {
-        //console.log(data.datasetValues[i])
-        //console.log(data.datasetValues[i][columns[j]])
-        value.push(<td>{data.datasetValues[i][columns[j]].toString()}</td>);
+        value.push(<td>{dataToUse.datasetValues[i][columns[j]].toString()}</td>);
       }
       rowsToPrint.push(<tr>{value}</tr>);
     } 
     if (showInfoPage) {
       return (
         <div>
+          {/* Modal de privacidad diferencial */}
+          <Modal show={showDPModal} onHide={this.hideDPModal} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Privacidad Diferencial sobre {columSelected}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">
+          <Form.Text id="passwordHelpBlock" muted>
+            ¿Que calculo con privacidad diferencial deseas aplicar?
+          </Form.Text>
+          <Form.Select id="dp_select" onChange={this.applyOnChange}>
+            <option value="Suma" selected>Suma</option>
+            <option value="Promedio">Promedio</option>
+            <option value="Maximo">Maximo</option>
+            <option value="Minimo">Minimo</option>
+            <option value="Contar">Contar por</option>
+          </Form.Select>
+          <Form.Text id="countValue" muted hidden={true}>
+          Seleccion un valor por el cual desea contar:
+          <InputGroup className="mb-3" size="sm">
+            <InputGroup.Text >
+              Valor
+            </InputGroup.Text>
+            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          <Form.Text id="passwordHelpBlock" muted>
+          ¿Que es el presupuesto de privacidad?
+
+          Numero entero de 0 a infinito, donde entre mas alto sea este numero mas necesidad de proteger la informacion de tu dataset
+          <InputGroup className="mb-3" size="sm">
+            <InputGroup.Text >
+              Presupuesto de privacidad
+            </InputGroup.Text>
+            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={this.applyDP}>
+              Calcular
+            </Button>
+            <Button variant="secondary" onClick={this.hideDPModal}>
+              Cancelar
+            </Button>
+          </Modal.Footer>
+          </Modal>
+          {/* Modal de eliminar columna */}
           <Modal show={showModal} onHide={this.hideModal}>
           <Modal.Header closeButton>
-            <Modal.Title>Eliminar columna</Modal.Title>
+            <Modal.Title>Eliminar columna {columSelected}</Modal.Title>
           </Modal.Header>
           <Modal.Body className="mensaje">Vas a eliminar esta columna para la vista. ¿Estas seguro?</Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={this.deleteColumn}>
               Eliminar
             </Button>
-            <Button variant="primary" onClick={this.hideModal}>
+            <Button variant="secondary" onClick={this.hideModal}>
               Cancelar
             </Button>
           </Modal.Footer>
           </Modal>
-          <Container>
+          <Container style={{marginLeft: "0px" }}>
             <Row>
               <Col xs={{ order: "first" }} className="user-info" lg="3">
                 <Container>

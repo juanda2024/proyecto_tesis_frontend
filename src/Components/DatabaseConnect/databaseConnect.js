@@ -258,7 +258,7 @@ class DatabaseConnect extends React.Component {
     if (showConnectionPage && proyectNamesListAvaliable) {
       return (
         <div>
-          <Container>
+          <Container style={{margin: "0px"}}>
             <Row>
               <Col xs={{ order: "first" }} className="user-info" lg="3">
                 <Container>
@@ -274,7 +274,7 @@ class DatabaseConnect extends React.Component {
                   </Row>
                   <Row xs="auto" className="user_info">
                     <Col>
-                      <h5 className="bienvenido_usuario">tus proyectos</h5>
+                      <h5 className="bienvenido_usuario">Tus proyectos</h5>
                     </Col>
                   </Row>
                   <Row xs="auto" className="user_info">
@@ -313,7 +313,7 @@ class DatabaseConnect extends React.Component {
                   </Row>
                 </Container>
               </Col>
-              <Col xs lg="9" className="database_login">
+              <Col xs lg="9" className="database_login" style={{padding: "94px 0px 94px 300px" }} align="center">
                 <form>
                   <h3 id="welome">Crea una conexión a tu base de datos!</h3>
                   <div className="form-group">
