@@ -422,7 +422,7 @@ class DatabaseConnect extends React.Component {
     if(showTableComponent){
       return (
         <div>
-          <ShowInfo showLastPage={this.toggleRender} data={this.state} />
+          <ShowInfo showLastPage={this.toggleRender} data={this.state} lastData={this.props} />
         </div>
       );
     }

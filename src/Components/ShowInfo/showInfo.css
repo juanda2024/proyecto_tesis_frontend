@@ -31,3 +31,22 @@
     margin-top: 30px;
     margin-bottom: 200px;
 }
+
+.bienvenido_usuario_logueado{
+    color: white;
+    margin-top: 30px;
+
+}
+
+.table {
+    overflow: auto;
+    overflow-x: auto;
+    width: calc(100% - 3px);
+    display: block;
+    table-layout: auto;
+}
+
+#hp  {
+    float: left;    
+     margin: 0 0 0 15px;
+}
