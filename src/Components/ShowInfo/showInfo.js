@@ -1,34 +1,62 @@
-import React from "react";
+import React from 'react';
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import "./showInfo.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Table from "react-bootstrap/Table";
-import Avatar, { genConfig } from "react-nice-avatar";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Avatar, { genConfig } from 'react-nice-avatar';
+import DropdownButton from "react-bootstrap/DropdownButton";
+import Dropdown from "react-bootstrap/Dropdown";
 
 class ShowInfo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showInfoPage: true,
+      showModal: false,
+      showInfoPage: true
     };
   }
   toggleRender = (RTA) => {
     this.setState({ showInfoPage: RTA });
   };
 
+  showModal = () => {
+    this.setState({ showModal: true });
+  };
+
+  hideModal = () => {
+    this.setState({ showModal: false });
+  };
+
+  deleteColumn = () => {
+    this.setState({ showModal: false });
+  };
+
   render() {
-    const { showInfoPage } = this.state;
-    const { data, lastData } = this.props;
+    const { showInfoPage, showModal} = this.state;
+    const {data, lastData} = this.props;
     const config = genConfig();
     //console.log(data.datasetValues);
     let columns;
     let columnsToPrint = [];
     let rowsToPrint = [];
     columns = Object.keys(data.datasetValues[0]);
-    for (let i = 0; i < columns.length; i++) {
-      columnsToPrint.push(<th>{columns[i]}</th>);
+    for(let i = 0; i < columns.length; i++){
+      columnsToPrint.push(
+  <th>
+    <div class='col'>
+      <div class='row' className="user_info">
+        <center>{columns[i]}</center>
+      </div>
+      <div class='row' xs="auto" className="user_info">   
+          <div class="col" className="user_info"><button id={columns[i]} className="closing" onClick={this.showModal}><img src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
+          <div class="col" className="user_info"><button id="close" className="closing1" onClick={this.showModal}><img src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+      </div>
+    </div>
+</th>)
     }
     for (let i = 0; i < data.datasetValues.length; i++) {
       let value = [];
@@ -38,10 +66,24 @@ class ShowInfo extends React.Component {
         value.push(<td>{data.datasetValues[i][columns[j]].toString()}</td>);
       }
       rowsToPrint.push(<tr>{value}</tr>);
-    }
+    } 
     if (showInfoPage) {
       return (
         <div>
+          <Modal show={showModal} onHide={this.hideModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Eliminar columna</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">Vas a eliminar esta columna para la vista. ¿Estas seguro?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={this.deleteColumn}>
+              Eliminar
+            </Button>
+            <Button variant="primary" onClick={this.hideModal}>
+              Cancelar
+            </Button>
+          </Modal.Footer>
+          </Modal>
           <Container>
             <Row>
               <Col xs={{ order: "first" }} className="user-info" lg="3">
@@ -111,19 +153,19 @@ class ShowInfo extends React.Component {
                   class="table-responsive"
                   striped
                   bordered
-                  hover
                 >
                   <thead>
                     <tr>{columnsToPrint}</tr>
                   </thead>
-                  <tbody>{rowsToPrint}</tbody>
+                  <tbody className='tableBody'>{rowsToPrint}</tbody>
                 </Table>
               </Col>
             </Row>
           </Container>
         </div>
       );
-    } else {
+    } 
+    else {
       return <div></div>;
     }
   }

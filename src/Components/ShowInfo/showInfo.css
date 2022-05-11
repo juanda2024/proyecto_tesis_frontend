@@ -29,7 +29,7 @@
 
 .drop_proyectos{
     margin-top: 30px;
-    margin-bottom: 200px;
+    margin-bottom: 50px;
 }
 
 .bienvenido_usuario_logueado{
@@ -38,15 +38,38 @@
 
 }
 
-.table {
-    overflow: auto;
-    overflow-x: auto;
-    width: calc(100% - 3px);
-    display: block;
-    table-layout: auto;
-}
+
 
 #hp  {
     float: left;    
      margin: 0 0 0 15px;
+}
+     
+.closing{
+    padding: 0px 0px 0px 10px;
+    border: none;
+    background: none;
+}
+
+.closing1{
+    padding: 0px;
+    border: none;
+    background: none;
+}
+
+.mensaje {
+    font-weight: normal;
+}
+
+.table{
+    display: block;
+    overflow: auto;
+    height: 850px;
+    width: 1250px;
+}
+
+thead, tbody tr {
+    display: table;
+    width: 300%;
+    table-layout: fixed;/* even columns width , fix width of table too*/
 }
