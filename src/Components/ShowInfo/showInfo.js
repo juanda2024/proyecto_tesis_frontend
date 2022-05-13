@@ -97,7 +97,15 @@ class ShowInfo extends React.Component {
             databaseName: dbname
           })
         };
-        let url = "http://127.0.0.1:3002/" + operacionDp + "/" + dbtable + "/" + this.state.columSelected + "/" + budgetDP
+        var url;
+        if(valueSelected=='Minimo' || valueSelected=='Maximo'){
+          let lower = document.getElementById('basic-url-min').value;
+          let upper = document.getElementById('basic-url-max').value;
+          url = "http://127.0.0.1:3002/" + operacionDp + "/" + dbtable + "/" + this.state.columSelected + "/" + budgetDP + "/" + lower + "/" + upper
+        }
+        else{
+          url = "http://127.0.0.1:3002/" + operacionDp + "/" + dbtable + "/" + this.state.columSelected + "/" + budgetDP
+        }
         fetch(url, options)
         .then((response) => response.json())
         .then((data3) => {
@@ -260,7 +268,7 @@ class ShowInfo extends React.Component {
             <InputGroup.Text >
               Valor
             </InputGroup.Text>
-            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+            <FormControl id="basic-url-min" aria-describedby="basic-addon3" />
           </InputGroup>
           </Form.Text>
           <Form.Text id="maxValue" muted hidden={true}>
@@ -269,7 +277,7 @@ class ShowInfo extends React.Component {
             <InputGroup.Text >
               Valor
             </InputGroup.Text>
-            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+            <FormControl id="basic-url-max" aria-describedby="basic-addon3" />
           </InputGroup>
           </Form.Text>
           <Form.Text id="passwordHelpBlock" muted>
