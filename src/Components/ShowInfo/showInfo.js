@@ -52,18 +52,82 @@ class ShowInfo extends React.Component {
   };
   
   applyDP = (e) => {
-    console.log(e.target.parentNode.parentNode.children[1].children[1].value);
-  
+    let valueSelected = e.target.parentNode.parentNode.children[1].children[1].value;
+    let budgetDP = document.getElementById('basic-url-dp').value;
+    console.log(budgetDP);
+    var operacionDp;
+    if(valueSelected == "Suma"){
+      operacionDp = 'sum'
+    }
+    else if(valueSelected == "Minimo"){
+      operacionDp = 'min'
+    }
+    else if(valueSelected == "Contar"){
+      operacionDp = 'count'
+    }
+    else if(valueSelected == "Maximo"){
+      operacionDp = 'max'
+    }
+    else if(valueSelected == "Promedio"){
+      operacionDp = 'average'
+    }
+    let proyects = this.props.data.avaliableProyects;
+    let proyectSelected = this.props.data.selectedProyect.split('_')[1];
+    var dbname, dbhost, dbpassword, dbport, dbusername, dbtable, querySplit;
+    for(let i = 0; i < proyects.length; i++){
+      if(proyects[i][0]["_id"] === proyectSelected){
+        dbname = proyects[i][0]["databaseName"]
+        dbhost = proyects[i][0]["host"]
+        dbpassword = proyects[i][0]["password"]
+        dbport = proyects[i][0]["port"]
+        dbusername = proyects[i][0]["username"]
+        querySplit = proyects[i][0]["originalQuery"].split(" ")
+        dbtable = querySplit[querySplit.length-1]
+        const options = {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: dbusername,
+            password: dbpassword,
+            host: dbhost,
+            port: dbport,
+            databaseName: dbname
+          })
+        };
+        let url = "http://127.0.0.1:3002/" + operacionDp + "/" + dbtable + "/" + this.state.columSelected + "/" + budgetDP
+        fetch(url, options)
+        .then((response) => response.json())
+        .then((data3) => {
+          let budgetDP = document.getElementById('result');
+          budgetDP.hidden = false;
+          budgetDP.innerHTML = "Resultado: " + data3;
+        });
+      } 
+      break;
+    }
   };
 
   applyOnChange = (e) => {
     let valor = e.target.value;
     let elementoValue = document.getElementById('countValue')
+    let minValue = document.getElementById('minValue')
+    let maxValue = document.getElementById('maxValue')
     if(valor==="Contar"){
       elementoValue.hidden = false;
+      minValue.hidden = true;
+      maxValue.hidden = true;
+    }
+    else if(valor==="Maximo" || valor==="Minimo"){
+      minValue.hidden = false;
+      maxValue.hidden = false;
     }
     else{
       elementoValue.hidden = true;
+      minValue.hidden = true;
+      maxValue.hidden = true;
     }
   };
 
@@ -94,7 +158,7 @@ class ShowInfo extends React.Component {
             databaseName: dbname
           })
         };
-        let url = "http://127.0.0.1:3002/deleteColumn/" + dbtable + "/" + this.state.columSelected;
+        let url = "http://localhost:3002/deleteColumn/" + dbtable + "/" + this.state.columSelected;
         fetch(url, options)
         .then(() => {
           const options2 = {
@@ -121,11 +185,11 @@ class ShowInfo extends React.Component {
           });
         });
       } 
+      break;
     }
   };
 
   render() {
-    console.log(this.title)
     const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData} = this.state;
     var dataToUse;
     const {data, lastData} = this.props;
@@ -183,7 +247,25 @@ class ShowInfo extends React.Component {
           </Form.Select>
           <Form.Text id="countValue" muted hidden={true}>
           Seleccion un valor por el cual desea contar:
-          <InputGroup className="mb-3" size="sm">
+          <InputGroup className="mb-3">
+            <InputGroup.Text >
+              Valor
+            </InputGroup.Text>
+            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          <Form.Text id="minValue" muted hidden={true}>
+          Valor Minimo:
+          <InputGroup className="mb-3">
+            <InputGroup.Text >
+              Valor
+            </InputGroup.Text>
+            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          <Form.Text id="maxValue" muted hidden={true}>
+          Valor maximo:
+          <InputGroup className="mb-3">
             <InputGroup.Text >
               Valor
             </InputGroup.Text>
@@ -194,12 +276,15 @@ class ShowInfo extends React.Component {
           ¿Que es el presupuesto de privacidad?
 
           Numero entero de 0 a infinito, donde entre mas alto sea este numero mas necesidad de proteger la informacion de tu dataset
-          <InputGroup className="mb-3" size="sm">
+          <InputGroup className="mb-3">
             <InputGroup.Text >
               Presupuesto de privacidad
             </InputGroup.Text>
-            <FormControl id="basic-url" aria-describedby="basic-addon3" />
+            <FormControl id="basic-url-dp" aria-describedby="basic-addon3" />
           </InputGroup>
+          </Form.Text>
+          <Form.Text id="result" muted hidden={true}>
+          Resultado:
           </Form.Text>
           </Modal.Body>
           <Modal.Footer>
