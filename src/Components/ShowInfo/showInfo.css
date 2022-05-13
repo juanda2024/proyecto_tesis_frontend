@@ -90,6 +90,6 @@ thead, tbody tr {
     margin: 0px;
 }
 
-#basic-url-dp{
+#basic-url-dp, #basic-url-max, #basic-url-min{
     margin: 0px;
 }
