@@ -11,6 +11,7 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Avatar, { genConfig } from 'react-nice-avatar';
+import {CSVLink, CSVDownload} from 'react-csv';
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 
@@ -54,21 +55,20 @@ class ShowInfo extends React.Component {
   applyDP = (e) => {
     let valueSelected = e.target.parentNode.parentNode.children[1].children[1].value;
     let budgetDP = document.getElementById('basic-url-dp').value;
-    console.log(budgetDP);
     var operacionDp;
-    if(valueSelected == "Suma"){
+    if(valueSelected === "Suma"){
       operacionDp = 'sum'
     }
-    else if(valueSelected == "Minimo"){
+    else if(valueSelected === "Minimo"){
       operacionDp = 'min'
     }
-    else if(valueSelected == "Contar"){
+    else if(valueSelected === "Contar"){
       operacionDp = 'count'
     }
-    else if(valueSelected == "Maximo"){
+    else if(valueSelected === "Maximo"){
       operacionDp = 'max'
     }
-    else if(valueSelected == "Promedio"){
+    else if(valueSelected === "Promedio"){
       operacionDp = 'average'
     }
     let proyects = this.props.data.avaliableProyects;
@@ -138,6 +138,10 @@ class ShowInfo extends React.Component {
       maxValue.hidden = true;
     }
   };
+
+  exportData = (e) => {
+    
+  }
 
   deleteColumn = (e) => {
     let proyects = this.props.data.avaliableProyects;
@@ -381,6 +385,23 @@ class ShowInfo extends React.Component {
                       <p className="bienvenido_usuario_logueado">
                         Privacidad Diferencial
                       </p>
+                    </Col>
+                  </Row>
+                  <Row xs="auto" className="user_info">
+                    <Col>
+                  <CSVLink data={dataToUse.datasetValues} >
+                  <button
+                    type="button"
+                    style={{
+                      width: "200px",
+                      marginTop: "30px",
+                    }}
+                    className="btn btn-primary btn-block"
+                    onClick={this.exportData}
+                  >
+                    Exportar cambios
+                  </button>
+                  </CSVLink>
                     </Col>
                   </Row>
                 </Container>
