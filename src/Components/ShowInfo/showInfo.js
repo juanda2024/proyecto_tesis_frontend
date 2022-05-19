@@ -2,6 +2,7 @@ import React from 'react';
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Spinner from "react-bootstrap/Spinner";
 import "./showInfo.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Table from "react-bootstrap/Table";
@@ -23,6 +24,7 @@ class ShowInfo extends React.Component {
       showModal: false,
       showInfoPage: true,
       showDPModal: false,
+      showNoiseModal: false,
       columSelected: "",
       columnDelete: false,
       newData: {datasetValues: []}
@@ -40,6 +42,16 @@ class ShowInfo extends React.Component {
 
   hideModal = () => {
     this.setState({ showModal: false });
+  };
+
+  showNoiseModal = (e) => {
+    const id = e.target.id;
+    this.setState({ columSelected: id });
+    this.setState({ showNoiseModal: true });
+  };
+
+  hideNoiseModal = () => {
+    this.setState({ showNoiseModal: false });
   };
 
   showDPModal = (e) => {
@@ -196,13 +208,83 @@ class ShowInfo extends React.Component {
             this.setState({ showModal: false });
           });
         });
+        break;
       } 
-      break;
+    }
+  };
+
+  applyNoise = (e) => {
+    
+    let loadingButton = document.getElementById('loading');
+    loadingButton.hidden = false;
+    let applyButton = document.getElementById('applyDPNoise');
+    applyButton.hidden = true;
+    let primary_key = document.getElementById('primary_key_value').value;
+    let budget = document.getElementById('noise_budget').value;
+    let proyects = this.props.data.avaliableProyects;
+    let proyectSelected = this.props.data.selectedProyect.split('_')[1];
+    var dbname, dbhost, dbpassword, dbport, dbusername, dbtable, querySplit;
+    for(let i = 0; i < proyects.length; i++){
+      console.log('Estoy entrando');
+      console.log(proyectSelected);
+      console.log(proyects[i][0]["_id"])
+      if(proyects[i][0]["_id"] === proyectSelected){
+        dbname = proyects[i][0]["databaseName"]
+        dbhost = proyects[i][0]["host"]
+        dbpassword = proyects[i][0]["password"]
+        dbport = proyects[i][0]["port"]
+        dbusername = proyects[i][0]["username"]
+        querySplit = proyects[i][0]["originalQuery"].split(" ")
+        dbtable = querySplit[querySplit.length-1]
+        const options = {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: dbusername,
+            password: dbpassword,
+            host: dbhost,
+            port: dbport,
+            databaseName: dbname
+          })
+        };
+        let url = "http://localhost:3002/applydp/" + dbtable + "/" + primary_key + "/" + this.state.columSelected + "/" + budget;
+        console.log(url)
+        fetch(url, options)
+        .then(() => {
+          const options2 = {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: dbusername,
+              password: dbpassword,
+              host: dbhost, 
+              port: dbport, 
+              databaseName: dbname, 
+              query: querySplit.join(" ")
+            }),
+          };
+          fetch("http://localhost:3001/getdata/obtaininfo/", options2)
+          .then((response) => response.json())
+          .then((data3) => {
+            this.setState({ newData: {datasetValues: data3} });
+            this.setState({ columnDelete: true });
+            this.setState({ showNoiseModal: false });
+          });
+        });
+        break;
+      } 
+      
     }
   };
 
   render() {
-    const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData} = this.state;
+    const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData, showNoiseModal} = this.state;
     var dataToUse;
     const {data, lastData} = this.props;
     if(columnDelete){
@@ -227,6 +309,7 @@ class ShowInfo extends React.Component {
       <div class='row' xs="auto" className="user_info">   
           <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
           <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+          <div class="col" className="user_info"><button className="closing1" onClick={this.showNoiseModal}><img id={columns[i]} src="https://static.thenounproject.com/png/904739-200.png" height={20} width={20}></img></button></div>
       </div>
     </div>
 </th>)
@@ -319,6 +402,45 @@ class ShowInfo extends React.Component {
               Eliminar
             </Button>
             <Button variant="secondary" onClick={this.hideModal}>
+              Cancelar
+            </Button>
+          </Modal.Footer>
+          </Modal>
+          {/* Modal de agregar ruido */}
+          <Modal show={showNoiseModal} onHide={this.hideNoiseModal} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Aplicar ruido con privacidad diferencial sobre {columSelected}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">
+          <Form.Text id="countValue" muted>
+          Escribe la Primary Key de tu tabla:
+          <InputGroup className="mb-3">
+            <InputGroup.Text >
+              Primary Key
+            </InputGroup.Text>
+            <FormControl id="primary_key_value" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          <Form.Text id="passwordHelpBlock" muted>
+          ¿Que es el presupuesto de privacidad?
+
+          Numero entero de 0 a infinito, donde entre mas alto sea este numero mas necesidad de proteger la informacion de tu dataset
+          <InputGroup className="mb-3">
+            <InputGroup.Text >
+              Presupuesto de privacidad
+            </InputGroup.Text>
+            <FormControl id="noise_budget" aria-describedby="basic-addon3" />
+          </InputGroup>
+          </Form.Text>
+          </Modal.Body>
+          <Modal.Footer>
+          <Spinner id='loading' animation="border" role="status" hidden={true}>
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+            <Button id='applyDPNoise' variant="primary" hidden={false} onClick={this.applyNoise}>
+              Aplicar ruido
+            </Button>
+            <Button variant="secondary" onClick={this.hideNoiseModal}>
               Cancelar
             </Button>
           </Modal.Footer>
