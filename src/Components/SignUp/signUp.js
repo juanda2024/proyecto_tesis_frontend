@@ -150,8 +150,6 @@ class SignUp extends React.Component {
 
   render() {
     const { showSignUpPage } = this.state;
-    console.log("hola");
-    console.log(showSignUpPage);
     if (showSignUpPage) {
       return (
         <div>
@@ -225,7 +223,7 @@ class SignUp extends React.Component {
                   <button
                     type="button"
                     style={{
-                      width: "370px",
+                      width: "420px",
                       marginTop: "30px",
                       marginBottom: "10px",
                     }}

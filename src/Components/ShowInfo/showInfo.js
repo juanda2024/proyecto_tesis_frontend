@@ -15,6 +15,7 @@ import Avatar, { genConfig } from 'react-nice-avatar';
 import {CSVLink, CSVDownload} from 'react-csv';
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
+import { color } from '@mui/system';
 
 class ShowInfo extends React.Component {
   constructor(props) {
@@ -25,6 +26,8 @@ class ShowInfo extends React.Component {
       showInfoPage: true,
       showDPModal: false,
       showNoiseModal: false,
+      showSuggestionDeleteModal: false,
+      showSuggestionApplyDPModal: false,
       columSelected: "",
       columnDelete: false,
       newData: {datasetValues: []}
@@ -48,6 +51,26 @@ class ShowInfo extends React.Component {
     const id = e.target.id;
     this.setState({ columSelected: id });
     this.setState({ showNoiseModal: true });
+  };
+
+  showSuggestionDeleteModal = (e) => {
+    const id = e.target.id;
+    this.setState({ columSelected: id });
+    this.setState({ showSuggestionDeleteModal: true });
+  };
+
+  hideSuggestionDeleteModal = () => {
+    this.setState({ showSuggestionDeleteModal: false });
+  };
+
+  showSuggestionApplyDPModal = (e) => {
+    const id = e.target.id;
+    this.setState({ columSelected: id });
+    this.setState({ showSuggestionApplyDPModal: true });
+  };
+
+  hideSuggestionApplyDPModal = () => {
+    this.setState({ showSuggestionApplyDPModal: false });
   };
 
   hideNoiseModal = () => {
@@ -225,9 +248,6 @@ class ShowInfo extends React.Component {
     let proyectSelected = this.props.data.selectedProyect.split('_')[1];
     var dbname, dbhost, dbpassword, dbport, dbusername, dbtable, querySplit;
     for(let i = 0; i < proyects.length; i++){
-      console.log('Estoy entrando');
-      console.log(proyectSelected);
-      console.log(proyects[i][0]["_id"])
       if(proyects[i][0]["_id"] === proyectSelected){
         dbname = proyects[i][0]["databaseName"]
         dbhost = proyects[i][0]["host"]
@@ -251,7 +271,6 @@ class ShowInfo extends React.Component {
           })
         };
         let url = "http://localhost:3002/applydp/" + dbtable + "/" + primary_key + "/" + this.state.columSelected + "/" + budget;
-        console.log(url)
         fetch(url, options)
         .then(() => {
           const options2 = {
@@ -284,7 +303,7 @@ class ShowInfo extends React.Component {
   };
 
   render() {
-    const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData, showNoiseModal} = this.state;
+    const { showInfoPage, showModal, showDPModal, columSelected, columnDelete, newData, showNoiseModal, showSuggestionDeleteModal, showSuggestionApplyDPModal} = this.state;
     var dataToUse;
     const {data, lastData} = this.props;
     if(columnDelete){
@@ -300,19 +319,53 @@ class ShowInfo extends React.Component {
     let rowsToPrint = [];
     columns = Object.keys(dataToUse.datasetValues[0]);
     for(let i = 0; i < columns.length; i++){
-      columnsToPrint.push(
-  <th>
-    <div class='col'>
-      <div class='row' className="user_info">
-        <center>{columns[i]}</center>
-      </div>
-      <div class='row' xs="auto" className="user_info">   
-          <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
-          <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
-          <div class="col" className="user_info"><button className="closing1" onClick={this.showNoiseModal}><img id={columns[i]} src="https://static.thenounproject.com/png/904739-200.png" height={20} width={20}></img></button></div>
-      </div>
-    </div>
-</th>)
+        if(dataToUse.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'delete')){
+          columnsToPrint.push(
+            <th>
+              <div class='col'>
+                <div class='row' xs="auto" className="user_info">
+                  <div class="col" className="user_info"><button className="closing" onClick={this.showSuggestionDeleteModal}><img id={columns[i]} src="https://d1tq3fcx54x7ou.cloudfront.net/uploads/store/tenant_313/templateswidget/3644/image/large-f38487d9e34dc336a1630d135b7e6163.png" height={20} width={20}></img></button></div>
+                  <center className="suggestion_delete">{columns[i]}</center>
+                </div>
+                <div class='row' xs="auto" className="user_info">   
+                    <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
+                    <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+                    <div class="col" className="user_info"><button className="closing1" onClick={this.showNoiseModal}><img id={columns[i]} src="https://static.thenounproject.com/png/904739-200.png" height={20} width={20}></img></button></div>
+                </div>
+              </div>
+          </th>);
+      }
+      else if(dataToUse.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'DP')){
+        columnsToPrint.push(
+          <th>
+            <div class='col'>
+              <div class='row' xs="auto" className="user_info">
+                <div class="col" className="user_info"><button className="closing" onClick={this.showSuggestionApplyDPModal}><img id={columns[i]} src="https://logodix.com/logo/1902534.png" height={20} width={20}></img></button></div>
+                <center className="suggestion_DP">{columns[i]}</center>
+              </div>
+              <div class='row' xs="auto" className="user_info">   
+                  <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
+                  <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+                  <div class="col" className="user_info"><button className="closing1" onClick={this.showNoiseModal}><img id={columns[i]} src="https://static.thenounproject.com/png/904739-200.png" height={20} width={20}></img></button></div>
+              </div>
+            </div>
+        </th>);
+    } 
+      else{
+        columnsToPrint.push(
+          <th>
+            <div class='col'>
+              <div class='row' className="user_info">
+                <center>{columns[i]}</center>
+              </div>
+              <div class='row' xs="auto" className="user_info">   
+                  <div class="col" className="user_info"><button className="closing" onClick={this.showModal}><img id={columns[i]} src="https://icon-library.com/images/icon-delete/icon-delete-16.jpg" height={20} width={20}></img></button></div>
+                  <div class="col" className="user_info"><button className="closing1" onClick={this.showDPModal}><img id={columns[i]} src="https://cdn2.iconfinder.com/data/icons/privacy-policy/512/privacy-data-policy-security-12-512.png" height={20} width={20}></img></button></div>
+                  <div class="col" className="user_info"><button className="closing1" onClick={this.showNoiseModal}><img id={columns[i]} src="https://static.thenounproject.com/png/904739-200.png" height={20} width={20}></img></button></div>
+              </div>
+            </div>
+        </th>);
+      }
     }
     for (let i = 0; i < dataToUse.datasetValues.length; i++) {
       let value = [];
@@ -320,10 +373,45 @@ class ShowInfo extends React.Component {
         value.push(<td>{dataToUse.datasetValues[i][columns[j]].toString()}</td>);
       }
       rowsToPrint.push(<tr>{value}</tr>);
-    } 
+    }
     if (showInfoPage) {
       return (
         <div>
+          {/* Modal de sugerencia: eliminar columna */}
+          <Modal show={showSuggestionDeleteModal} onHide={this.hideSuggestionDeleteModal} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Sugerencia: eliminar la columna {columSelected}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">
+          <Form.Text id="passwordHelpBlock" muted>
+            Te sugerimos eliminar esta columna para su distribución, dado que contiene datos sensibles  
+          </Form.Text>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={this.hideSuggestionDeleteModal}>
+              Entendido
+            </Button>
+          </Modal.Footer>
+          </Modal>
+
+          {/* Modal de sugerencia: aplicar DP sobre una columna */}
+          <Modal show={showSuggestionApplyDPModal} onHide={this.hideSuggestionApplyDPModal} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Sugerencia: aplicar privacidad diferencial la columna {columSelected}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="mensaje">
+          <Form.Text id="passwordHelpBlock" muted>
+            Te sugerimos que antes de distribuir la información de esta columna, apliques privacidad diferencial sobre los datos, dado que contiene posible datos
+            que perjudiquen la anonimidad de una persona en especifico.
+          </Form.Text>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={this.hideSuggestionApplyDPModal}>
+              Entendido
+            </Button>
+          </Modal.Footer>
+          </Modal>
+
           {/* Modal de privacidad diferencial */}
           <Modal show={showDPModal} onHide={this.hideDPModal} size="lg">
           <Modal.Header closeButton>
@@ -506,6 +594,20 @@ class ShowInfo extends React.Component {
                     <Col lg={9}>
                       <p className="bienvenido_usuario_logueado">
                         Privacidad Diferencial
+                      </p>
+                    </Col>
+                  </Row>
+                  <Row xs="auto" className="user_info">
+                    <Col lg={3} className="user_info logo2">
+                      <img
+                        src="https://static.thenounproject.com/png/904739-200.png"
+                        height={30}
+                        width={30}
+                      ></img>
+                    </Col>
+                    <Col lg={9}>
+                      <p className="bienvenido_usuario_logueado">
+                        Ruido a datos
                       </p>
                     </Col>
                   </Row>

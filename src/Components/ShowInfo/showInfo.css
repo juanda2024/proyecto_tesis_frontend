@@ -93,3 +93,11 @@ thead, tbody tr {
 #basic-url-dp, #basic-url-max, #basic-url-min, #noise_budget, #primary_key_value{
     margin: 0px;
 }
+
+.suggestion_delete{
+    color: #b42a2a;
+}
+
+.suggestion_DP{
+    color: #399cff;
+}

@@ -167,7 +167,7 @@ class Login extends React.Component {
                   <button
                     type="button"
                     style={{
-                      width: "370px",
+                      width: "420px",
                       marginTop: "30px",
                       marginBottom: "10px",
                     }}
