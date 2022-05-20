@@ -226,7 +226,7 @@ class ShowInfo extends React.Component {
           fetch("http://localhost:3001/getdata/obtaininfo/", options2)
           .then((response) => response.json())
           .then((data3) => {
-            this.setState({ newData: {datasetValues: data3} });
+            this.setState({ newData: {datasetValues: data3}});
             this.setState({ columnDelete: true });
             this.setState({ showModal: false });
           });
@@ -273,6 +273,7 @@ class ShowInfo extends React.Component {
         let url = "http://localhost:3002/applydp/" + dbtable + "/" + primary_key + "/" + this.state.columSelected + "/" + budget;
         fetch(url, options)
         .then(() => {
+          console.log(querySplit.join(" ") + "order by " + primary_key)
           const options2 = {
             method: "post",
             headers: {
@@ -285,7 +286,7 @@ class ShowInfo extends React.Component {
               host: dbhost, 
               port: dbport, 
               databaseName: dbname, 
-              query: querySplit.join(" ")
+              query: querySplit.join(" ") + " order by " + primary_key
             }),
           };
           fetch("http://localhost:3001/getdata/obtaininfo/", options2)
@@ -319,7 +320,7 @@ class ShowInfo extends React.Component {
     let rowsToPrint = [];
     columns = Object.keys(dataToUse.datasetValues[0]);
     for(let i = 0; i < columns.length; i++){
-        if(dataToUse.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'delete')){
+        if(data.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'delete')){
           columnsToPrint.push(
             <th>
               <div class='col'>
@@ -335,7 +336,7 @@ class ShowInfo extends React.Component {
               </div>
           </th>);
       }
-      else if(dataToUse.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'DP')){
+      else if(data.suggestionList.some(suggestion => suggestion.word === columns[i] && suggestion.action === 'DP')){
         columnsToPrint.push(
           <th>
             <div class='col'>
